@@ -121,6 +121,20 @@
                 wrapper.appendChild(img);
                 gameContainer.appendChild(wrapper);
             });
+            const timerElement = document.getElementById('timer');
+            let timeLeft = 8;
+            timerElement.style.display = 'block';
+            timerElement.textContent = `Time Left: ${timeLeft}s`;
+
+            const countdown = setInterval(() => {
+                 timeLeft--;
+                 timerElement.textContent = `Time Left: ${timeLeft}s`;
+                 if (timeLeft <= 0) {
+                   clearInterval(countdown);
+                   timerElement.style.display = 'none';
+    }
+}, 1000);
+
 
             setTimeout(() => {
                 gameContainer.style.display = 'none';
