@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Recall Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        #game-container {
+            display: none;
+            position: relative;
+            width: 90vw;
+            height: 80vh;
+            margin: 0 auto;
+            border: 2px solid #4CAF50;
+            background-color: white;
+            overflow: hidden;
+        }
+        .image-wrapper {
+            position: absolute;
+            padding: 5px;
+            background-color: white;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        img {
+            width: 90px;
+            height: 90px;
+            object-fit: contain;
+        }
+        #recall-section {
+            display: none;
+        }
+        #recall-input {
+            width: 80%;
+            max-width: 400px;
+        }
+        #result {
+            font-weight: bold;
+            margin-top: 15px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Recall Game</h1>
+    <button onclick="startGame()">Start Game</button>
+
+    <div id="game-container"></div>
+
+    <div id="recall-section">
+        <h2>Recall Time!</h2>
+        <p>Write down as many items as you can remember:</p>
+        <textarea id="recall-input" rows="10" cols="50"></textarea><br>
+        <button onclick="submitRecall()">Submit</button>
+        <p id="result"></p>
+        <button onclick="restartGame()">Restart Game</button>
+    </div>
+
+    <script>
+        const imageNames = ["apple", "car", "book", "clock", "camera", "chair", "comb", "calculator", "bag", "toothbrush", "pen", "shoe", "hat", "bottle", "key", "wallet", "cat", "umbrella", "laptop", "football", "bicycle", "table", "mirror", "remote", "notebook", "scissors", "mouse", "keyboard", "fan", "door", "plant", "tv", "fridge", "mic", "ring", "watch", "bucket", "pillow", "sofa", "calendar"];
+
+        const allImages = imageNames.map(name => ({
+            name: name,
+            url: `images/${name}.png`
+        }));
+
+        let correctAnswers = [];
+
+        function startGame() {
+            document.querySelector('button').style.display = 'none';
+            const gameContainer = document.getElementById('game-container');
+            gameContainer.innerHTML = '';
+            gameContainer.style.display = 'block';
+
+            const selectedImages = allImages.sort(() => 0.5 - Math.random()).slice(0, 20);
+            correctAnswers = selectedImages.map(img => img.name);
+
+            const placedPositions = [];
+
+            selectedImages.forEach(({ name, url }) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'image-wrapper';
+
+                let overlapping;
+                let x, y;
+                do {
+                    overlapping = false;
+                    x = Math.random() * (gameContainer.offsetWidth - 100);
+                    y = Math.random() * (gameContainer.offsetHeight - 100);
+
+                    for (let pos of placedPositions) {
+                        if (!(x + 100 < pos.x || x > pos.x + 100 || y + 100 < pos.y || y > pos.y + 100)) {
+                            overlapping = true;
+                            break;
+                        }
+                    }
+                } while (overlapping);
+
+                placedPositions.push({ x, y });
+
+                wrapper.style.left = `${x}px`;
+                wrapper.style.top = `${y}px`;
+
+                const img = document.createElement('img');
+                img.src = url;
+                img.alt = name;
+                wrapper.appendChild(img);
+                gameContainer.appendChild(wrapper);
+            });
+
+            setTimeout(() => {
+                gameContainer.style.display = 'none';
+                document.getElementById('recall-section').style.display = 'block';
+            }, 7000);
+        }
+
+        function normalizeText(text) {
+            return text.toLowerCase().replace(/s$/,''); // Normalize to lowercase and remove plural 's'
+        }
+
+        function submitRecall() {
+            const recallText = document.getElementById('recall-input').value.toLowerCase().split(/\s|,|\n/).filter(Boolean);
+            const normalizedRecall = recallText.map(normalizeText);
+            const normalizedAnswers = correctAnswers.map(normalizeText);
+
+            const matched = normalizedRecall.filter((word, index) => normalizedAnswers.includes(word) && normalizedRecall.indexOf(word) === index);
+
+            document.getElementById('result').innerHTML = `You remembered ${matched.length} out of ${correctAnswers.length} correctly! <br>Correct: ${matched.join(', ')}`;
+        }
+
+        function restartGame() {
+            document.getElementById('recall-section').style.display = 'none';
+            document.querySelector('button').style.display = 'inline-block';
+        }
+    </script>
+</body>
+</html>
